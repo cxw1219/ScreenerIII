@@ -29,15 +29,29 @@ from .backtesting import (
     load_data_from_timescaledb,
     run_simple_backtest
 )
-from .multi_timeframe import (
-    TimeFrame,
-    TimeFrameSignal,
-    MultiTimeFrameSignal,
-    MultiTimeFrameAnalyzer,
-    TimeFrameSynchronizer,
-    quick_mtf_analysis,
-    compare_timeframes
-)
+
+# Multi-timeframe analysis requires OANDA client (optional dependency)
+try:
+    from .multi_timeframe import (
+        TimeFrame,
+        TimeFrameSignal,
+        MultiTimeFrameSignal,
+        MultiTimeFrameAnalyzer,
+        TimeFrameSynchronizer,
+        quick_mtf_analysis,
+        compare_timeframes
+    )
+    MTF_AVAILABLE = True
+except ImportError:
+    MTF_AVAILABLE = False
+    # Placeholder values
+    TimeFrame = None
+    TimeFrameSignal = None
+    MultiTimeFrameSignal = None
+    MultiTimeFrameAnalyzer = None
+    TimeFrameSynchronizer = None
+    quick_mtf_analysis = None
+    compare_timeframes = None
 
 __all__ = [
     # Indicators

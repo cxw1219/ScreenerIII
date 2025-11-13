@@ -5,14 +5,26 @@ This module provides comprehensive data collection functionality for market data
 including OANDA API integration, data structures, validation, and storage.
 """
 
-from .oanda_client import (
-    OANDAClient,
-    ConnectionStatus,
-    OANDAClientError,
-    RateLimitError,
-    ConnectionError as OANDAConnectionError,
-    RateLimiter
-)
+# Try to import OANDA client (requires oandapyV20)
+try:
+    from .oanda_client import (
+        OANDAClient,
+        ConnectionStatus,
+        OANDAClientError,
+        RateLimitError,
+        ConnectionError as OANDAConnectionError,
+        RateLimiter
+    )
+    OANDA_AVAILABLE = True
+except ImportError:
+    OANDA_AVAILABLE = False
+    # Create placeholder classes
+    OANDAClient = None
+    ConnectionStatus = None
+    OANDAClientError = Exception
+    RateLimitError = Exception
+    OANDAConnectionError = Exception
+    RateLimiter = None
 
 from .market_data import (
     Price,
