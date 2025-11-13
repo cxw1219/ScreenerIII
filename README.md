@@ -599,6 +599,23 @@ python -c "import os; from dotenv import load_dotenv; load_dotenv(); print('API 
 tail -n 50 logs/screener.log
 ```
 
+## Roadmap
+
+ScreenerIII is under active development with exciting features planned for the future!
+
+### Coming Soon
+- **Real-time WebSocket streaming** - Faster price updates
+- **Backtesting framework** - Test strategies on historical data
+- **Web dashboard** - Beautiful charts and analysis tools
+- **Machine learning models** - AI-powered signal prediction
+- **Multi-asset support** - Forex, stocks, crypto
+- **Paper trading** - Simulate trades risk-free
+
+See our detailed [Development Roadmap](ROADMAP.md) for the complete plan, or check the [Quick Reference](docs/roadmap-quick-reference.md) for a condensed view.
+
+### Want to Contribute?
+We welcome contributions! Check the roadmap for areas where you can help, and see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
 ## Requirements
 
 - Python 3.9+
