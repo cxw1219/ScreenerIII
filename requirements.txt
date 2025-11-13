@@ -10,3 +10,5 @@ colorama==0.4.6
 talib-binary==0.4.24
 scipy>=1.11.4
 matplotlib>=3.8.2
+psycopg2-binary>=2.9.9
+alembic>=1.13.0

@@ -1,0 +1,28 @@
+# Development and Testing Tools
+
+# Testing framework for writing and running unit tests
+pytest>=7.4.3
+
+# Coverage plugin for pytest to measure code coverage
+pytest-cov>=4.1.0
+
+# Code formatter for automatic Python code formatting (PEP 8 compliant)
+black>=23.12.0
+
+# Style guide enforcement tool to check Python code against PEP 8
+flake8>=6.1.0
+
+# Static type checker for Python to catch type-related bugs
+mypy>=1.7.1
+
+# Security vulnerability scanner for finding common security issues
+bandit>=1.7.5
+
+# Framework for managing pre-commit hooks to automate code quality checks
+pre-commit>=3.6.0
+
+# Enhanced interactive Python shell for development and debugging
+ipython>=8.18.0
+
+# Plugin for pytest to mock objects during testing
+pytest-mock>=3.12.0
