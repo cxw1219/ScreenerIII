@@ -233,3 +233,233 @@ def caplog_setup():
     return {
         "level": "DEBUG",
     }
+
+
+@pytest.fixture
+def temp_database_path(tmp_path):
+    """
+    Fixture providing temporary database path for testing.
+
+    Returns path to a temporary SQLite database file.
+    """
+    db_path = tmp_path / "test_screener.db"
+    return str(db_path)
+
+
+@pytest.fixture
+def mock_database_config(temp_database_path):
+    """
+    Fixture providing mock database configuration.
+
+    Returns a mock config object for database testing.
+    """
+    config = Mock()
+    config.database_url = f"sqlite:///{temp_database_path}"
+    config.database_echo = False
+    config.database_pool_size = 5
+    config.database_max_overflow = 10
+    return config
+
+
+@pytest.fixture
+def sample_price_data():
+    """
+    Fixture providing sample Price object for testing.
+
+    Returns a Price dataclass instance with realistic forex data.
+    """
+    from src.data.market_data import Price
+
+    return Price(
+        instrument="EUR_USD",
+        bid=1.0000,
+        ask=1.0005,
+        timestamp=datetime.now(),
+        tradeable=True
+    )
+
+
+@pytest.fixture
+def sample_candle_data():
+    """
+    Fixture providing sample Candle object for testing.
+
+    Returns a Candle dataclass instance with realistic OHLCV data.
+    """
+    from src.data.market_data import Candle
+
+    return Candle(
+        instrument="EUR_USD",
+        timestamp=datetime.now(),
+        open=1.0000,
+        high=1.0050,
+        low=0.9950,
+        close=1.0025,
+        volume=1000,
+        complete=True,
+        granularity="H1"
+    )
+
+
+@pytest.fixture
+def sample_candles_list():
+    """
+    Fixture providing a list of sample Candle objects.
+
+    Returns 100 candles with sequential timestamps for testing.
+    """
+    from src.data.market_data import Candle
+
+    candles = []
+    base_time = datetime.now() - timedelta(hours=100)
+
+    for i in range(100):
+        candle = Candle(
+            instrument="EUR_USD",
+            timestamp=base_time + timedelta(hours=i),
+            open=1.0000 + (i * 0.0001),
+            high=1.0050 + (i * 0.0001),
+            low=0.9950 + (i * 0.0001),
+            close=1.0025 + (i * 0.0001),
+            volume=1000 + (i * 10),
+            complete=True,
+            granularity="H1"
+        )
+        candles.append(candle)
+
+    return candles
+
+
+@pytest.fixture
+def mock_oanda_candle_response():
+    """
+    Fixture providing mock OANDA candle API response.
+
+    Returns a dictionary mimicking OANDA's candle response format.
+    """
+    now = datetime.now()
+    return {
+        "instrument": "EUR_USD",
+        "granularity": "H1",
+        "candles": [
+            {
+                "time": (now - timedelta(hours=i)).isoformat() + "Z",
+                "bid": {
+                    "o": "1.0000",
+                    "h": "1.0050",
+                    "l": "0.9950",
+                    "c": "1.0025"
+                },
+                "ask": {
+                    "o": "1.0001",
+                    "h": "1.0051",
+                    "l": "0.9951",
+                    "c": "1.0026"
+                },
+                "mid": {
+                    "o": "1.00005",
+                    "h": "1.00505",
+                    "l": "0.99505",
+                    "c": "1.00255"
+                },
+                "volume": 1000,
+                "complete": True
+            }
+            for i in range(100)
+        ]
+    }
+
+
+@pytest.fixture
+def mock_oanda_price_response():
+    """
+    Fixture providing mock OANDA pricing API response.
+
+    Returns a dictionary mimicking OANDA's pricing response format.
+    """
+    return {
+        "prices": [
+            {
+                "instrument": "EUR_USD",
+                "time": datetime.now().isoformat() + "Z",
+                "bids": [{"price": "1.0000", "liquidity": 10000}],
+                "asks": [{"price": "1.0005", "liquidity": 10000}],
+                "closeoutBid": "1.0000",
+                "closeoutAsk": "1.0005",
+                "status": "tradeable",
+                "tradeable": True
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def mock_logger():
+    """
+    Fixture providing a mock logger with all standard methods.
+
+    Returns a MagicMock configured with logging methods.
+    """
+    logger = MagicMock()
+    logger.debug = Mock()
+    logger.info = Mock()
+    logger.warning = Mock()
+    logger.error = Mock()
+    logger.critical = Mock()
+    return logger
+
+
+@pytest.fixture
+def sample_market_display_data():
+    """
+    Fixture providing sample market data for display testing.
+
+    Returns a list of dictionaries with market data for terminal display.
+    """
+    return [
+        {
+            "symbol": "EUR_USD",
+            "price": 1.0050,
+            "bid": 1.0048,
+            "ask": 1.0052,
+            "change_24h": 0.15,
+            "signal": "BUY",
+            "direction": "LONG",
+            "target": 1.0100,
+            "stop_loss": 1.0025,
+            "risk_reward": 2.0,
+            "atr": 0.0020,
+            "volume": 150000,
+            "confidence": 0.85
+        },
+        {
+            "symbol": "GBP_USD",
+            "price": 1.2500,
+            "bid": 1.2498,
+            "ask": 1.2502,
+            "change_24h": -0.25,
+            "signal": "SELL",
+            "direction": "SHORT",
+            "target": 1.2450,
+            "stop_loss": 1.2525,
+            "risk_reward": 1.5,
+            "atr": 0.0035,
+            "volume": 120000,
+            "confidence": 0.70
+        },
+        {
+            "symbol": "XAU_USD",
+            "price": 1850.50,
+            "bid": 1850.25,
+            "ask": 1850.75,
+            "change_24h": 0.05,
+            "signal": "HOLD",
+            "direction": "NEUTRAL",
+            "target": None,
+            "stop_loss": None,
+            "risk_reward": None,
+            "atr": 5.50,
+            "volume": 50000,
+            "confidence": 0.50
+        }
+    ]

@@ -146,3 +146,11 @@ models/*.pt
 tmp/
 temp/
 *.tmp
+
+# Pre-commit and security
+.secrets.baseline
+.pre-commit-framework/
+pre-commit-framework/
+
+# Pylint
+.pylint_cache/

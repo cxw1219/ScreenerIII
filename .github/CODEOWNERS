@@ -1,0 +1,37 @@
+# Code ownership configuration for ScreenerIII
+# This file specifies who should be the code reviewer for pull requests
+
+# Default reviewers for the entire repository
+* @owner
+
+# Specific paths and their reviewers
+
+# CI/CD and GitHub Actions
+.github/workflows/ @owner
+
+# Configuration files
+config/ @owner
+setup.py @owner
+requirements*.txt @owner
+
+# Source code
+src/ @owner
+
+# Tests
+tests/ @owner
+
+# Documentation
+*.md @owner
+docs/ @owner
+
+# Docker
+Dockerfile @owner
+docker/ @owner
+docker-compose.yml @owner
+
+# Database and migrations
+migrations/ @owner
+models/ @owner
+
+# Main application file
+main.py @owner
