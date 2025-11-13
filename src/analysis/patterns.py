@@ -11,9 +11,22 @@ License: MIT
 from typing import Dict, List, Optional, Tuple, Union
 import pandas as pd
 import numpy as np
-import talib
-from scipy.signal import argrelextrema
 import logging
+
+# Optional dependencies
+try:
+    import talib
+    TALIB_AVAILABLE = True
+except ImportError:
+    TALIB_AVAILABLE = False
+    logging.warning("TA-Lib not available. Candlestick patterns will be limited.")
+
+try:
+    from scipy.signal import argrelextrema
+    SCIPY_AVAILABLE = True
+except ImportError:
+    SCIPY_AVAILABLE = False
+    logging.warning("SciPy not available. Some pattern detection will be limited.")
 
 # Configure logging
 logger = logging.getLogger(__name__)

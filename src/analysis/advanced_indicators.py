@@ -17,12 +17,25 @@ License: MIT
 from typing import Dict, List, Optional, Tuple, Union
 import pandas as pd
 import numpy as np
-import talib
-from scipy import signal
-from scipy.stats import norm
 import logging
 from dataclasses import dataclass
 from enum import Enum
+
+# Optional dependencies
+try:
+    import talib
+    TALIB_AVAILABLE = True
+except ImportError:
+    TALIB_AVAILABLE = False
+    logger.warning("TA-Lib not available. Some indicators will be limited.")
+
+try:
+    from scipy import signal
+    from scipy.stats import norm
+    SCIPY_AVAILABLE = True
+except ImportError:
+    SCIPY_AVAILABLE = False
+    logger.warning("SciPy not available. Some indicators will be limited.")
 
 # Configure logging
 logger = logging.getLogger(__name__)

@@ -11,9 +11,22 @@ License: MIT
 from typing import Dict, Optional, Tuple, Union
 import pandas as pd
 import numpy as np
-import talib
-from ta import trend, volatility, momentum, volume
 import logging
+
+# Optional dependencies
+try:
+    import talib
+    TALIB_AVAILABLE = True
+except ImportError:
+    TALIB_AVAILABLE = False
+    logging.warning("TA-Lib not available. Will use fallback implementations.")
+
+try:
+    from ta import trend, volatility, momentum, volume
+    TA_AVAILABLE = True
+except ImportError:
+    TA_AVAILABLE = False
+    logging.warning("ta library not available. Will use fallback implementations.")
 
 # Configure logging
 logger = logging.getLogger(__name__)
