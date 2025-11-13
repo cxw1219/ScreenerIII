@@ -18,3 +18,14 @@ psutil>=5.9.0
 # Alert System Dependencies
 plyer>=2.1.0  # Desktop notifications (cross-platform)
 python-telegram-bot>=20.0  # Telegram bot integration
+
+# Redis Cache Dependencies
+redis>=5.0.0  # Redis client for Python
+hiredis>=2.0.0  # C parser for Redis protocol (performance boost)
+msgpack>=1.0.0  # MessagePack serialization (optional, for performance)
+
+# Alternative Data Source Dependencies
+alpha-vantage>=2.3.0  # Alpha Vantage API client (stocks, forex, crypto)
+polygon-api-client>=1.0.0  # Polygon.io API client (stocks, forex, options)
+yfinance>=0.2.0  # Yahoo Finance data (free fallback option)
+requests>=2.31.0  # HTTP library for API calls

@@ -30,6 +30,30 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # Redis Service - Cache and message broker
+  redis:
+    image: redis:7-alpine
+    container_name: screeneriii-redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - screener_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   # pgAdmin Service - Database management UI (optional)
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -66,6 +90,8 @@ services:
     depends_on:
       timescaledb:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       # Database configuration
       DATABASE_URL: postgresql://${POSTGRES_USER:-screener_user}:${POSTGRES_PASSWORD:-screener_password}@timescaledb:5432/${POSTGRES_DB:-screener_db}
@@ -74,6 +100,12 @@ services:
       DB_NAME: ${POSTGRES_DB:-screener_db}
       DB_USER: ${POSTGRES_USER:-screener_user}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-screener_password}
+
+      # Redis configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: ${REDIS_DB:-0}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
 
       # OANDA API configuration
       OANDA_API_KEY: ${OANDA_API_KEY}
@@ -104,6 +136,8 @@ volumes:
   timescaledb_data:
     driver: local
   pgadmin_data:
+    driver: local
+  redis_data:
     driver: local
 
 networks:

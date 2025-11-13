@@ -31,6 +31,31 @@ from .storage import (
     ConnectionError as StorageConnectionError
 )
 
+from .data_sources import (
+    # Base Classes
+    DataSource,
+    DataSourceType,
+    DataSourceStatus,
+    DataSourceError,
+    RateLimitExceeded,
+    DataNotAvailable,
+
+    # Data Structures
+    InstrumentInfo,
+    DataSourceHealth,
+
+    # Data Source Implementations
+    OANDADataSource,
+    AlphaVantageDataSource,
+    PolygonIODataSource,
+    YahooFinanceDataSource,
+
+    # Management Classes
+    DataSourceManager,
+    DataAggregator,
+    DataSourceRateLimiter,
+)
+
 
 __all__ = [
     # OANDA Client
@@ -55,6 +80,29 @@ __all__ = [
     'StorageManager',
     'DatabaseError',
     'StorageConnectionError',
+
+    # Data Sources - Base Classes
+    'DataSource',
+    'DataSourceType',
+    'DataSourceStatus',
+    'DataSourceError',
+    'RateLimitExceeded',
+    'DataNotAvailable',
+
+    # Data Sources - Data Structures
+    'InstrumentInfo',
+    'DataSourceHealth',
+
+    # Data Sources - Implementations
+    'OANDADataSource',
+    'AlphaVantageDataSource',
+    'PolygonIODataSource',
+    'YahooFinanceDataSource',
+
+    # Data Sources - Management
+    'DataSourceManager',
+    'DataAggregator',
+    'DataSourceRateLimiter',
 ]
 
 
