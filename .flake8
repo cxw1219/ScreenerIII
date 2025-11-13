@@ -1,0 +1,56 @@
+[flake8]
+# Flake8 configuration for ScreenerIII
+
+# Maximum line length
+max-line-length = 100
+
+# Python version target
+python-version = 3.9
+
+# Error codes to ignore
+# E203: Whitespace before ':'
+# W503: Line break before binary operator
+# W504: Line break after binary operator
+ignore = E203, W503, W504
+
+# Error codes to treat as errors
+# E999: Syntax errors
+extend-ignore =
+
+# Excluded paths
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    env,
+    .egg,
+    .eggs,
+    *.egg-info,
+    dist,
+    build,
+    .pytest_cache,
+    .mypy_cache,
+    .env,
+    node_modules
+
+# Require module docstrings
+require-code = True
+
+# Maximum cyclomatic complexity (McCabe)
+max-complexity = 10
+
+# Per-file-ignores
+per-file-ignores =
+    __init__.py: F401
+    tests/*.py: D100, D101, D102, D103
+    conftest.py: D100, D101
+
+# Enable bugbear checks
+extend-default-select = C,E,F,W,B
+
+# Flake8-docstrings configuration
+docstring-convention = google
+
+# Flake8-bugbear configuration
+extend-immutable-calls = range

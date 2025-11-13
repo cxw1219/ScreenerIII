@@ -1,0 +1,58 @@
+version: 2
+
+updates:
+  # Enable version updates for Python dependencies
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+    open-pull-requests-limit: 5
+    pull-request-branch-name:
+      separator: "/"
+    labels:
+      - "dependencies"
+      - "python"
+    reviewers:
+      - "owner"
+    commit-message:
+      prefix: "chore(deps):"
+      include: "scope"
+    allow:
+      - dependency-type: "all"
+    ignore:
+      # Uncomment if you want to ignore specific packages
+      # - dependency-name: "requests"
+      #   versions: ["3.*"]
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "tuesday"
+      time: "10:00"
+    open-pull-requests-limit: 3
+    labels:
+      - "ci/cd"
+      - "github-actions"
+    reviewers:
+      - "owner"
+    commit-message:
+      prefix: "ci(actions):"
+
+  # Enable version updates for Docker images (optional)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "10:00"
+    labels:
+      - "dependencies"
+      - "docker"
+    reviewers:
+      - "owner"
+    commit-message:
+      prefix: "chore(docker):"

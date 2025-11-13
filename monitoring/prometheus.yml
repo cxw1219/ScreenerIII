@@ -1,0 +1,113 @@
+# Prometheus Configuration for ScreenerIII
+# This file configures Prometheus to scrape metrics from ScreenerIII
+
+global:
+  # How often to scrape targets by default
+  scrape_interval: 15s
+
+  # How long until a scrape request times out
+  scrape_timeout: 10s
+
+  # How often to evaluate rules
+  evaluation_interval: 15s
+
+  # Attach labels to all time series collected
+  external_labels:
+    monitor: 'screener-iii'
+
+# Alerting configuration (optional)
+alerting:
+  alertmanagers:
+    # - static_configs:
+    #     - targets:
+    #         - 'localhost:9093'
+
+# Load rules once and periodically evaluate them
+rule_files:
+  # - "alert_rules.yml"
+  # - "recording_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # ScreenerIII Application Metrics
+  - job_name: 'screener-iii'
+    # Override the global default scrape interval (15s) to 10s for real-time updates
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+    # HTTP metrics path defaults to '/metrics'
+    metrics_path: '/metrics'
+
+    # Scheme defaults to 'http'.
+    scheme: http
+
+    static_configs:
+      # ScreenerIII metrics endpoint
+      - targets: ['localhost:8000']
+        labels:
+          instance: 'screener-iii-main'
+
+  # ScreenerIII Health Check Endpoint
+  - job_name: 'screener-iii-health'
+    scrape_interval: 30s
+    metrics_path: '/health'
+    scheme: http
+    static_configs:
+      - targets: ['localhost:8000']
+        labels:
+          instance: 'screener-iii-health'
+
+  # Optional: Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          instance: 'prometheus-main'
+
+# Alert rules configuration
+# Define alert thresholds for monitoring ScreenerIII
+# Rules can include:
+# - API error rate > 5% for 5 minutes
+# - Loop execution time > 30 seconds
+# - Memory usage > 80%
+# - Disk usage > 90%
+# - API latency > 5 seconds (p95)
+# - Database latency > 1 second (p95)
+
+# Example alert rules (uncomment and modify as needed):
+#
+# alert_rules:
+#   - alert: HighAPIErrorRate
+#     expr: rate(screener_api_errors_total[5m]) / rate(screener_api_calls_total[5m]) > 0.05
+#     for: 5m
+#     annotations:
+#       summary: "High API error rate (> 5%)"
+#       description: "API error rate has been above 5% for 5 minutes"
+#
+#   - alert: HighMemoryUsage
+#     expr: screener_memory_usage_bytes / 1024 / 1024 / 1024 > 2
+#     for: 5m
+#     annotations:
+#       summary: "High memory usage"
+#       description: "ScreenerIII is using more than 2GB of memory"
+#
+#   - alert: SlowLoopExecution
+#     expr: screener_loop_duration_seconds > 30
+#     for: 5m
+#     annotations:
+#       summary: "Slow main loop detected"
+#       description: "Main loop execution time exceeds 30 seconds"
+#
+#   - alert: UnhealthyAPIConnectivity
+#     expr: screener_api_connectivity == 0
+#     for: 1m
+#     annotations:
+#       summary: "API connectivity issue"
+#       description: "Unable to connect to OANDA API"
+#
+#   - alert: UnhealthyDatabaseConnectivity
+#     expr: screener_database_connectivity == 0
+#     for: 1m
+#     annotations:
+#       summary: "Database connectivity issue"
+#       description: "Unable to connect to database"

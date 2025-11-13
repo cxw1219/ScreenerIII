@@ -1,0 +1,131 @@
+# Pre-commit hooks configuration for ScreenerIII
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+repos:
+  # Code Formatting: Black
+  - repo: https://github.com/psf/black
+    rev: 24.1.1
+    hooks:
+      - id: black
+        name: Black - Python code formatter
+        language_version: python3.9
+        args: [--line-length=100]
+
+  # Code Formatting: isort
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort - Import sorting
+        args: [--profile=black, --line-length=100]
+        language_version: python3.9
+
+  # Linting: Flake8
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        name: flake8 - Style guide enforcement
+        additional_dependencies:
+          - flake8-bugbear
+          - flake8-comprehensions
+          - flake8-docstrings
+        args: [--config=.flake8]
+        language_version: python3.9
+
+  # Linting: Pylint
+  - repo: https://github.com/PyCQA/pylint
+    rev: pylint-3.0.3
+    hooks:
+      - id: pylint
+        name: pylint - Code analysis
+        args: [--rcfile=.pylintrc, --fail-under=8.0]
+        additional_dependencies:
+          - pytest
+          - sqlalchemy
+          - pydantic
+          - requests
+          - psycopg2-binary
+        language_version: python3.9
+
+  # Security: Bandit
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        name: bandit - Security issues detection
+        args: [-c, .bandit, -r, .]
+        exclude: ^tests/
+        language_version: python3.9
+
+  # Security: Detect Secrets
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        name: detect-secrets - Credential scanning
+        args: [--baseline, .secrets.baseline]
+        exclude: package.lock.json
+
+  # Type Checking: mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        name: mypy - Static type checking
+        args: [--ignore-missing-imports, --disallow-untyped-defs, --no-implicit-optional]
+        additional_dependencies:
+          - types-requests
+          - types-PyYAML
+          - sqlalchemy
+          - pydantic
+        language_version: python3.9
+        exclude: ^tests/
+
+  # General: Trailing whitespace
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: trailing-whitespace - Remove trailing whitespace
+        args: [--markdown-args=--ignore-md-indent]
+
+      - id: end-of-file-fixer
+        name: end-of-file-fixer - Fix end of file newlines
+
+      - id: check-yaml
+        name: check-yaml - Validate YAML syntax
+        args: [--safe]
+
+      - id: check-json
+        name: check-json - Validate JSON syntax
+
+      - id: check-toml
+        name: check-toml - Validate TOML syntax
+
+      - id: check-added-large-files
+        name: check-added-large-files - Detect large file additions
+        args: [--maxkb=500]
+
+      - id: check-merge-conflict
+        name: check-merge-conflict - Detect merge conflicts
+
+      - id: check-docstring-first
+        name: check-docstring-first - Docstring positioning check
+
+      - id: debug-statements
+        name: debug-statements - Debug code detection
+
+      - id: name-tests-test
+        name: name-tests-test - Test file naming validation
+        args: [--pytest-test-first]
+
+# Global configuration
+default_language_version:
+  python: python3.9
+
+# Execution configuration
+fail_fast: false
+verbose: true
+minimum_pre_commit_version: 2.15.0

@@ -1,0 +1,145 @@
+version: '3.8'
+
+services:
+  # TimescaleDB Service - PostgreSQL with TimescaleDB extension
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: screeneriii-timescaledb
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-screener_db}
+      POSTGRES_USER: ${POSTGRES_USER:-screener_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-screener_password}
+      POSTGRES_INITDB_ARGS: "-c max_connections=200"
+    ports:
+      - "${TIMESCALEDB_PORT:-5432}:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-screener_user} -d ${POSTGRES_DB:-screener_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - screener_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis Service - Cache and message broker
+  redis:
+    image: redis:7-alpine
+    container_name: screeneriii-redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - screener_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # pgAdmin Service - Database management UI (optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: screeneriii-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@screener.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin_password}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      SCRIPT_NAME: /pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    networks:
+      - screener_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    profiles:
+      - with-pgadmin
+
+  # ScreenerIII Application Service (optional)
+  screeneriii:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: screeneriii-app
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Database configuration
+      DATABASE_URL: postgresql://${POSTGRES_USER:-screener_user}:${POSTGRES_PASSWORD:-screener_password}@timescaledb:5432/${POSTGRES_DB:-screener_db}
+      DB_HOST: timescaledb
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-screener_db}
+      DB_USER: ${POSTGRES_USER:-screener_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-screener_password}
+
+      # Redis configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: ${REDIS_DB:-0}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+
+      # OANDA API configuration
+      OANDA_API_KEY: ${OANDA_API_KEY}
+      OANDA_ACCOUNT_ID: ${OANDA_ACCOUNT_ID}
+      OANDA_ENVIRONMENT: ${OANDA_ENVIRONMENT:-practice}
+
+      # Application configuration
+      UPDATE_INTERVAL: ${UPDATE_INTERVAL:-10}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - ./logs:/home/screener/logs
+      - ./data:/home/screener/data
+    networks:
+      - screener_network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    profiles:
+      - with-app
+    stdin_open: true
+    tty: true
+
+volumes:
+  timescaledb_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  screener_network:
+    driver: bridge

@@ -1,0 +1,242 @@
+# Pylint configuration for ScreenerIII
+# https://www.pylint.org/
+
+[MASTER]
+# Add files or directories to the blacklist
+ignore-patterns =
+    \.git,
+    __pycache__,
+    \.venv,
+    venv,
+    env,
+    \.egg,
+    \.eggs,
+    \.pytest_cache,
+    \.mypy_cache,
+    build,
+    dist,
+
+# Use multiple processes to speed up pylint
+jobs = 1
+
+# Minimum Python version to target
+py-version = 3.9
+
+# Load per-directory plugin configuration
+load-plugins =
+    pylint_django,
+
+[MESSAGES CONTROL]
+# Disable specific message types
+disable =
+    # Docstring conventions
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    # Too many branches/arguments/locals
+    too-many-branches,
+    too-many-arguments,
+    too-many-locals,
+    too-many-statements,
+    too-many-instance-attributes,
+    # Other
+    fixme,
+    line-too-long,
+    unused-import,
+    unused-argument,
+    protected-access,
+    # For tests
+    too-few-public-methods,
+    redefined-outer-name,
+
+# Enable specific message types
+enable =
+    c-extension-no-member,
+
+[REPORTS]
+# Avoid report output for files
+output-format = text
+
+# Set a score threshold to determine if exit code is 0 or 1
+fail-under = 8.0
+
+# Maximum number of locals in function / method body
+max-locals = 20
+
+# Maximum number of branches for function / method body
+max-branches = 15
+
+# Maximum number of arguments for function / method
+max-args = 8
+
+# Maximum number of attributes for class / function
+max-attributes = 10
+
+# Good variable names which should always be accepted, separated by a comma
+good-names =
+    i,
+    j,
+    k,
+    ex,
+    Run,
+    _,
+    id,
+    df,
+    ax,
+    x,
+    y,
+    z,
+
+# Bad variable names which should always be rejected, separated by a comma
+bad-names =
+    foo,
+    bar,
+    baz,
+    toto,
+    tutu,
+    tata,
+
+# Minimum lines of code to be considered a module
+min-similarity-lines = 4
+
+[FORMAT]
+# Maximum number of characters on a single line
+max-line-length = 100
+
+# String quote to prefer
+string-quote = single-avoid-escape
+
+# Allow the body of a class to be on the same line as the declaration
+single-line-class-stmt = no
+
+# Allow the body of an if to be on the same line as the test
+single-line-if-stmt = no
+
+# Maximum number of successive lines of blank lines in a file
+max-blank-lines = 2
+
+[BASIC]
+# Good variable names which should always be accepted, separated by a comma
+const-rgx = (^_?[A-Z][A-Z0-9_]*$|^_?[a-z][a-z0-9_]*$)
+
+# Naming style matching correct class attribute names
+class-attribute-naming-style = snake_case
+
+# Naming style matching correct class names
+class-naming-style = PascalCase
+
+# Naming style matching correct constant names
+const-naming-style = UPPER_CASE
+
+# Naming style matching correct function names
+function-naming-style = snake_case
+
+# Naming style matching correct method names
+method-naming-style = snake_case
+
+# Naming style matching correct module names
+module-naming-style = snake_case
+
+# Naming style matching correct variable names
+variable-naming-style = snake_case
+
+[DESIGN]
+# Maximum number of arguments for function / method
+max-args = 8
+
+# Maximum number of attributes for a class
+max-attributes = 10
+
+# Maximum number of boolean arguments for function / method
+max-bool-args = 5
+
+# Maximum number of branches for function / method body
+max-branches = 15
+
+# Maximum number of locals in function / method body
+max-locals = 20
+
+# Maximum number of parents for a class
+max-parents = 7
+
+# Maximum number of public methods for a class
+max-public-methods = 20
+
+# Maximum number of return / yield for function / method body
+max-returns = 6
+
+# Minimum number of public methods for a class
+min-public-methods = 1
+
+[SIMILARITIES]
+# Ignore comments and docstrings when computing similarities
+ignore-comments = yes
+
+# Ignore docstrings when computing similarities
+ignore-docstrings = yes
+
+# Ignore imports when computing similarities
+ignore-imports = yes
+
+# Minimum lines number of a similarity match
+min-similarity-lines = 4
+
+[LOGGING]
+# The type of string formatting that logging methods do
+logging-format-style = new
+
+# Logging modules which allow lazy formatting of the message
+logging-modules = logging
+
+[VARIABLES]
+# Tells whether we should check for unused import in __init__ files
+init-import = no
+
+# List of strings which can identify a callback function by name
+callbacks = cb_, _cb
+
+# A regular expression matching the name of dummy variables
+dummy-variables-rgx = _+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|^ignored_|^unused_
+
+# Argument names that match this expression will be flagged as unused
+# unless they're used in nested function definitions
+_ignored-argument-names = _.*?$|^ignored_|^unused_
+
+[CLASSES]
+# List of method names used to declare an abstract method
+defining-attr-methods =
+    __init__,
+    __new__,
+    setUp,
+    setupModule,
+    setUpClass,
+
+# List of valid names for the first argument in a class method
+valid-classmethod-first-arg = cls
+
+# List of valid names for the first argument in a metaclass class method
+valid-metaclass-classmethod-first-arg = cls
+
+[IMPORTS]
+# Force import order to recognize a module as part of a standard
+# compatibility set of modules
+known-standard-library =
+
+# Force import order to recognize a module as part of a third party set of
+# modules (useful for modules/packages found in search path which shall not
+# be considered as installable)
+known-third-party =
+    sqlalchemy,
+    pydantic,
+    fastapi,
+    starlette,
+    psycopg2,
+    requests,
+    pandas,
+    numpy,
+
+[EXCEPTIONS]
+# Exceptions that will emit a warning when being caught
+overgeneral-exceptions =
+    BaseException,
+    Exception,
