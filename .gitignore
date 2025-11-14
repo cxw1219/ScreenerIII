@@ -141,6 +141,8 @@ models/*.h5
 models/*.pt
 *.csv
 *.xlsx
+*.db
+*.sqlite
 
 # Temporary files
 tmp/
