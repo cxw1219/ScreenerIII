@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScreenerIII - Commodity Trading Dashboard</title>
+    <style>
+        /* ------------------------------------------------------------------ */
+        /* Reset & base                                                       */
+        /* ------------------------------------------------------------------ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 14px; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                         Helvetica, Arial, sans-serif;
+            background: #0f1117;
+            color: #e1e4e8;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* ------------------------------------------------------------------ */
+        /* Layout                                                             */
+        /* ------------------------------------------------------------------ */
+        .header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #58a6ff;
+        }
+        .header .status {
+            font-size: 0.8rem;
+            color: #8b949e;
+        }
+        .header .status .dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #3fb950;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .header .status.error .dot { background: #f85149; }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+        .grid .full { grid-column: 1 / -1; }
+
+        /* ------------------------------------------------------------------ */
+        /* Cards                                                              */
+        /* ------------------------------------------------------------------ */
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-header h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #c9d1d9;
+        }
+        .card-body {
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        /* ------------------------------------------------------------------ */
+        /* Tables                                                             */
+        /* ------------------------------------------------------------------ */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        th, td {
+            text-align: left;
+            padding: 0.5rem 0.75rem;
+            white-space: nowrap;
+        }
+        th {
+            color: #8b949e;
+            font-weight: 600;
+            border-bottom: 1px solid #30363d;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        tr:not(:last-child) td { border-bottom: 1px solid #21262d; }
+        tr:hover td { background: #1c2128; }
+
+        /* ------------------------------------------------------------------ */
+        /* Utilities                                                          */
+        /* ------------------------------------------------------------------ */
+        .positive { color: #3fb950; }
+        .negative { color: #f85149; }
+        .neutral  { color: #8b949e; }
+        .badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-buy  { background: rgba(63,185,80,0.15); color: #3fb950; }
+        .badge-sell { background: rgba(248,81,73,0.15); color: #f85149; }
+        .badge-active { background: rgba(88,166,255,0.15); color: #58a6ff; }
+        .badge-closed { background: rgba(139,148,158,0.15); color: #8b949e; }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+        }
+        .stat-item .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: #8b949e;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        .stat-item .value {
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+
+        .refresh-note {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #484f58;
+            padding: 1rem 0 0.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: #8b949e;
+            padding: 2rem;
+            font-size: 0.85rem;
+        }
+
+        /* ------------------------------------------------------------------ */
+        /* Responsive                                                         */
+        /* ------------------------------------------------------------------ */
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>ScreenerIII</h1>
+    <div class="status" id="connection-status">
+        <span class="dot"></span>
+        <span id="status-text">Connecting...</span>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Portfolio summary -->
+    <div class="card" style="margin-bottom:1.25rem;">
+        <div class="card-header">
+            <h2>Portfolio Summary</h2>
+        </div>
+        <div class="card-body">
+            <div class="stat-grid" id="portfolio-stats">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid">
+
+        <!-- Markets -->
+        <div class="card full">
+            <div class="card-header">
+                <h2>Market Overview</h2>
+                <span class="neutral" id="market-updated" style="font-size:0.7rem;"></span>
+            </div>
+            <div class="card-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Name</th>
+                            <th>Exchange</th>
+                            <th style="text-align:right">Price</th>
+                            <th style="text-align:right">Change</th>
+                            <th style="text-align:right">Change %</th>
+                            <th style="text-align:right">Bid</th>
+                            <th style="text-align:right">Ask</th>
+                            <th style="text-align:right">Volume</th>
+                        </tr>
+                    </thead>
+                    <tbody id="markets-body">
+                        <tr><td colspan="9" class="loading">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Active signals -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Active Signals</h2>
+            </div>
+            <div class="card-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Type</th>
+                            <th style="text-align:right">Confidence</th>
+                            <th style="text-align:right">Entry</th>
+                            <th style="text-align:right">Stop</th>
+                            <th style="text-align:right">Target</th>
+                            <th style="text-align:right">R:R</th>
+                        </tr>
+                    </thead>
+                    <tbody id="signals-body">
+                        <tr><td colspan="7" class="loading">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Open positions -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Open Positions</h2>
+            </div>
+            <div class="card-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Dir</th>
+                            <th style="text-align:right">Qty</th>
+                            <th style="text-align:right">Entry</th>
+                            <th style="text-align:right">Current</th>
+                            <th style="text-align:right">P&amp;L</th>
+                        </tr>
+                    </thead>
+                    <tbody id="positions-body">
+                        <tr><td colspan="6" class="loading">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Performance -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Performance</h2>
+            </div>
+            <div class="card-body">
+                <div class="stat-grid" id="perf-stats">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk -->
+        <div class="card">
+            <div class="card-header">
+                <h2>Risk Metrics</h2>
+            </div>
+            <div class="card-body">
+                <div class="stat-grid" id="risk-stats">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="refresh-note">Auto-refreshes every 10 seconds</div>
+
+</div>
+
+<script>
+(function () {
+    "use strict";
+
+    var API = "/api/v1";
+    var REFRESH_MS = 10000;
+    var statusEl = document.getElementById("connection-status");
+    var statusText = document.getElementById("status-text");
+
+    /* ------------------------------------------------------------------ */
+    /* Helpers                                                             */
+    /* ------------------------------------------------------------------ */
+    function fmt(n, decimals) {
+        if (n == null) return "-";
+        return Number(n).toLocaleString(undefined, {
+            minimumFractionDigits: decimals || 2,
+            maximumFractionDigits: decimals || 2
+        });
+    }
+
+    function pnlClass(n) {
+        if (n > 0) return "positive";
+        if (n < 0) return "negative";
+        return "neutral";
+    }
+
+    function signalBadge(type) {
+        var cls = (type === "BUY" || type === "STRONG_BUY") ? "badge-buy" : "badge-sell";
+        return '<span class="badge ' + cls + '">' + type + '</span>';
+    }
+
+    function dirBadge(dir) {
+        var cls = dir === "LONG" ? "badge-buy" : "badge-sell";
+        return '<span class="badge ' + cls + '">' + dir + '</span>';
+    }
+
+    function setStatus(ok) {
+        statusEl.className = ok ? "status" : "status error";
+        statusText.textContent = ok ? "Connected" : "Connection error";
+    }
+
+    function fetchJSON(path, cb) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", API + path, true);
+        xhr.setRequestHeader("Accept", "application/json");
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    var resp = JSON.parse(xhr.responseText);
+                    cb(null, resp);
+                } catch (e) {
+                    cb(e, null);
+                }
+            } else {
+                cb(new Error("HTTP " + xhr.status), null);
+            }
+        };
+        xhr.onerror = function () { cb(new Error("Network error"), null); };
+        xhr.send();
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Renderers                                                           */
+    /* ------------------------------------------------------------------ */
+
+    function renderMarkets(err, resp) {
+        if (err || !resp || resp.status !== "success") { setStatus(false); return; }
+        setStatus(true);
+        var rows = resp.data;
+        var html = "";
+        for (var i = 0; i < rows.length; i++) {
+            var m = rows[i];
+            var cls = pnlClass(m.change);
+            html += "<tr>"
+                + "<td><strong>" + m.symbol + "</strong></td>"
+                + "<td>" + m.name + "</td>"
+                + "<td>" + m.exchange + "</td>"
+                + '<td style="text-align:right">' + fmt(m.price) + "</td>"
+                + '<td style="text-align:right" class="' + cls + '">' + fmt(m.change) + "</td>"
+                + '<td style="text-align:right" class="' + cls + '">' + fmt(m.change_pct) + "%</td>"
+                + '<td style="text-align:right">' + fmt(m.bid) + "</td>"
+                + '<td style="text-align:right">' + fmt(m.ask) + "</td>"
+                + '<td style="text-align:right">' + fmt(m.volume, 0) + "</td>"
+                + "</tr>";
+        }
+        document.getElementById("markets-body").innerHTML = html;
+        document.getElementById("market-updated").textContent =
+            "Updated: " + new Date().toLocaleTimeString();
+    }
+
+    function renderSignals(err, resp) {
+        if (err || !resp || resp.status !== "success") return;
+        var rows = resp.data;
+        var html = "";
+        if (!rows.length) {
+            html = '<tr><td colspan="7" class="neutral" style="text-align:center">No active signals</td></tr>';
+        }
+        for (var i = 0; i < rows.length; i++) {
+            var s = rows[i];
+            html += "<tr>"
+                + "<td><strong>" + s.symbol + "</strong></td>"
+                + "<td>" + signalBadge(s.signal_type) + "</td>"
+                + '<td style="text-align:right">' + fmt(s.confidence, 1) + "%</td>"
+                + '<td style="text-align:right">' + fmt(s.entry_price) + "</td>"
+                + '<td style="text-align:right">' + fmt(s.stop_loss) + "</td>"
+                + '<td style="text-align:right">' + fmt(s.target_1) + "</td>"
+                + '<td style="text-align:right">' + fmt(s.risk_reward) + "</td>"
+                + "</tr>";
+        }
+        document.getElementById("signals-body").innerHTML = html;
+    }
+
+    function renderPositions(err, resp) {
+        if (err || !resp || resp.status !== "success") return;
+        var rows = resp.data;
+        var html = "";
+        if (!rows.length) {
+            html = '<tr><td colspan="6" class="neutral" style="text-align:center">No open positions</td></tr>';
+        }
+        for (var i = 0; i < rows.length; i++) {
+            var p = rows[i];
+            html += "<tr>"
+                + "<td><strong>" + p.symbol + "</strong></td>"
+                + "<td>" + dirBadge(p.direction) + "</td>"
+                + '<td style="text-align:right">' + p.quantity + "</td>"
+                + '<td style="text-align:right">' + fmt(p.entry_price) + "</td>"
+                + '<td style="text-align:right">' + fmt(p.current_price) + "</td>"
+                + '<td style="text-align:right" class="' + pnlClass(p.unrealized_pnl) + '">$' + fmt(p.unrealized_pnl) + "</td>"
+                + "</tr>";
+        }
+        document.getElementById("positions-body").innerHTML = html;
+    }
+
+    function renderPortfolio(err, resp) {
+        if (err || !resp || resp.status !== "success") return;
+        var d = resp.data;
+        var html = ""
+            + statItem("Equity", "$" + fmt(d.equity), pnlClass(d.unrealized_pnl))
+            + statItem("Unrealized P&L", "$" + fmt(d.unrealized_pnl), pnlClass(d.unrealized_pnl))
+            + statItem("Realized P&L", "$" + fmt(d.realized_pnl), pnlClass(d.realized_pnl))
+            + statItem("Margin Used", "$" + fmt(d.margin_used), "neutral")
+            + statItem("Margin Available", "$" + fmt(d.margin_available), "neutral")
+            + statItem("Open Positions", d.open_positions_count, "neutral")
+            + statItem("Total Trades", d.total_trades, "neutral")
+            + statItem("Win Rate", fmt(d.win_rate, 1) + "%", d.win_rate >= 50 ? "positive" : "negative");
+        document.getElementById("portfolio-stats").innerHTML = html;
+    }
+
+    function renderPerformance(err, resp) {
+        if (err || !resp || resp.status !== "success") return;
+        var d = resp.data;
+        var html = ""
+            + statItem("Total Return", fmt(d.total_return_pct, 2) + "%", pnlClass(d.total_return_pct))
+            + statItem("Sharpe Ratio", fmt(d.sharpe_ratio), d.sharpe_ratio >= 1 ? "positive" : "neutral")
+            + statItem("Max Drawdown", fmt(d.max_drawdown, 2) + "%", "negative")
+            + statItem("Profit Factor", fmt(d.profit_factor), d.profit_factor >= 1.5 ? "positive" : "neutral")
+            + statItem("Avg Win", "$" + fmt(d.avg_win), "positive")
+            + statItem("Avg Loss", "$" + fmt(d.avg_loss), "negative");
+        document.getElementById("perf-stats").innerHTML = html;
+    }
+
+    function renderRisk(err, resp) {
+        if (err || !resp || resp.status !== "success") return;
+        var d = resp.data;
+        var html = ""
+            + statItem("VaR 95%", "$" + fmt(d.portfolio_var_95), "negative")
+            + statItem("VaR 99%", "$" + fmt(d.portfolio_var_99), "negative")
+            + statItem("Exposure", "$" + fmt(d.current_exposure), "neutral")
+            + statItem("Exposure Util", fmt(d.exposure_utilization_pct, 1) + "%",
+                       d.exposure_utilization_pct > 60 ? "negative" : "positive")
+            + statItem("Margin Level", fmt(d.current_margin_level, 1) + "%",
+                       d.current_margin_level > 200 ? "positive" : "negative")
+            + statItem("Daily P&L", "$" + fmt(d.current_daily_pnl), pnlClass(d.current_daily_pnl));
+        document.getElementById("risk-stats").innerHTML = html;
+    }
+
+    function statItem(label, value, cls) {
+        return '<div class="stat-item">'
+            + '<div class="label">' + label + '</div>'
+            + '<div class="value ' + (cls || "") + '">' + value + '</div>'
+            + '</div>';
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Data loading                                                        */
+    /* ------------------------------------------------------------------ */
+
+    function loadAll() {
+        fetchJSON("/markets", renderMarkets);
+        fetchJSON("/signals", renderSignals);
+        fetchJSON("/portfolio", renderPortfolio);
+        fetchJSON("/portfolio/positions", renderPositions);
+        fetchJSON("/performance", renderPerformance);
+        fetchJSON("/risk", renderRisk);
+    }
+
+    // Initial load
+    loadAll();
+
+    // Auto-refresh every 10 seconds
+    setInterval(loadAll, REFRESH_MS);
+
+})();
+</script>
+
+</body>
+</html>
