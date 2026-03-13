@@ -419,7 +419,7 @@ class FeatureEngineering:
         if isinstance(df.index, pd.DatetimeIndex):
             dt = df.index
         elif "timestamp" in df.columns:
-            dt = pd.to_datetime(df["timestamp"])
+            dt = pd.to_datetime(df["timestamp"]).dt
         else:
             logger.warning("No datetime index or 'timestamp' column found; skipping time features")
             return df
